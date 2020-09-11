@@ -2,7 +2,7 @@
 
 
 
-## install golang and prepare the environment
+## 1. Install golang and prepare the environment
 
 ```
 sudo apt-get update
@@ -21,12 +21,15 @@ export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
 go get cloud.google.com/go/spanner
 ```
 
-## Create the API credentials
+## 2. Create the API credentials
 
-Go to the credentials page: https://console.cloud.google.com/apis/credentials
+Visit the credentials page: https://console.cloud.google.com/apis/credentials.
+
 Click on the ```Create service account``` button and follow the instructions.
 Save the resulting json file somewhere on the filesystem, e.g. ```/home/user/token.json```
 
-## Turn on API for your projects
+## 3. Enable Cloud Resource Manager API for your projects
 
-In order to access a project with API, one needs to enable Cloud Resource Manager API for than project. To do this, visit https://console.cloud.google.com/apis/library/cloudresourcemanager.googleapis.com, press the ```Enable``` button and choose your project. 
+In order to access a project with API, one needs to enable Cloud Resource Manager API for that project.
+
+Visit https://console.cloud.google.com/apis/library/cloudresourcemanager.googleapis.com, press the ```Enable``` button and choose your project. 
