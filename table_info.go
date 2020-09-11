@@ -1,11 +1,8 @@
 package main
 
 import (
-	"context"
-	"fmt"
-
 	"cloud.google.com/go/spanner"
-	"google.golang.org/api/iterator"
+	"context"
 )
 
 type ColumnInfo struct {
@@ -20,46 +17,29 @@ type TableInfo struct {
 	RowsCount int64
 }
 
-func GetRowsCount(client *spanner.Client, table string) int64 {
-	ctx := context.Background()
+func GetRowsCount(ctx context.Context, client *spanner.Client, table string) int64 {
 	stmt := spanner.Statement{SQL: `SELECT COUNT(*) as count FROM ` + table}
 
 	iter := client.Single().Query(ctx, stmt)
 	defer iter.Stop()
 
-	for {
-		row, err := iter.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			fmt.Println(err)
-			break
-		}
-		var rowsCount int64
+	var rowsCount int64
+	iter.Do(func(row *spanner.Row) error {
 		if err := row.Columns(&rowsCount); err != nil {
-			fmt.Println(err)
-			break
+			return err
 		}
-
-		return rowsCount
-	}
-
-	return -1
+		return nil
+	})
+	return rowsCount
 }
 
-func GetTableInfos(databasePath string) []TableInfo {
-	ctx := context.Background()
-	client, err := spanner.NewClient(ctx, databasePath)
-	if err != nil {
-		fmt.Println(err)
-		return []TableInfo{}
-	}
+func GetTableInfos(ctx context.Context, databasePath string) []TableInfo {
+	client, _ := spanner.NewClient(ctx, databasePath)
 	defer client.Close()
 
 	stmt := spanner.Statement{SQL: `
 		SELECT
-			column_name, 
+			column_name,
 			table_name,
 			spanner_type
 		FROM
@@ -67,35 +47,30 @@ func GetTableInfos(databasePath string) []TableInfo {
 		WHERE table_catalog = '' AND table_schema = ''
 	`}
 
-	tables := make(map[string]TableInfo)
-
 	iter := client.Single().Query(ctx, stmt)
 	defer iter.Stop()
-	for {
-		row, err := iter.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			fmt.Println(err)
-			break
-		}
-		var columnName, tableName, spannerType string
-		if err := row.Columns(&columnName, &tableName, &spannerType); err != nil {
-			fmt.Println(err)
-			break
-		}
-
-		tableInfo := tables[tableName]
-		tableInfo.Name = tableName
-		tableInfo.Columns = append(tableInfo.Columns, ColumnInfo{Name: columnName, Type: spannerType})
-		tables[tableName] = tableInfo
-	}
 
 	var tableInfos []TableInfo
-	for _, tableInfo := range tables {
-		tableInfo.RowsCount = GetRowsCount(client, tableInfo.Name)
-		tableInfos = append(tableInfos, tableInfo)
-	}
+	tables := make(map[string]int)
+
+	iter.Do(func(row *spanner.Row) error {
+		var columnName, tableName, spannerType string
+		row.Columns(&columnName, &tableName, &spannerType)
+
+		index, ok := tables[tableName]; if !ok {
+			index = len(tableInfos)
+			tables[tableName] = index
+
+			var tableInfo TableInfo
+			tableInfo.Name = tableName
+			tableInfo.RowsCount = GetRowsCount(ctx, client, tableName)
+			tableInfos = append(tableInfos, tableInfo)
+		}
+
+		tableInfos[index].Columns = append(tableInfos[index].Columns, ColumnInfo{Name: columnName, Type: spannerType})
+
+		return nil
+	})
+
 	return tableInfos
 }

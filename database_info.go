@@ -13,32 +13,24 @@ type DatabaseInfo struct {
 	Path string
 	State string
 
-	BytesSize int64
 	Tables []TableInfo
 }
 
-func (databaseInfo DatabaseInfo) ToJson() []byte {
-	resp, err := json.Marshal(databaseInfo)
-	if err != nil {
-		fmt.Println(err)
-		return []byte{}
-	}
-	return resp
+func (databaseInfo DatabaseInfo) ToJson() string {
+	resp, _ := json.Marshal(databaseInfo)
+	return string(resp)
 }
 
 func (databaseInfo DatabaseInfo) ToJsonPretty() string {
-	simpleJson := databaseInfo.ToJson()
+	simpleJson, _ := json.Marshal(databaseInfo)
 
 	var prettyJSON bytes.Buffer
-	error := json.Indent(&prettyJSON, simpleJson, "", "  ")
-	if error != nil {
-		return ""
-	}
+	json.Indent(&prettyJSON, simpleJson, "", "  ")
 
 	return prettyJSON.String()
 }
 
-func GetDatabaseInfo(databaseAdminClient *database.DatabaseAdminClient, databasePath string) DatabaseInfo {
+func GetDatabaseInfo(ctx context.Context, databasePath string) DatabaseInfo {
 	var databaseInfo DatabaseInfo
 	databaseInfo.Path = databasePath
 
@@ -46,7 +38,13 @@ func GetDatabaseInfo(databaseAdminClient *database.DatabaseAdminClient, database
 		Name: databasePath,
 	}
 
-	ctx := context.Background()
+	databaseAdminClient, err := database.NewDatabaseAdminClient(ctx)
+	if err != nil {
+		fmt.Println(err)
+		return DatabaseInfo{}
+	}
+	defer databaseAdminClient.Close()
+
 	resp, err := databaseAdminClient.GetDatabase(ctx, getDatabaseRequest)
 	if err != nil {
 		fmt.Println(err)
@@ -54,23 +52,15 @@ func GetDatabaseInfo(databaseAdminClient *database.DatabaseAdminClient, database
 	}
 
 	databaseInfo.State = resp.GetState().String()
-	databaseInfo.Tables = GetTableInfos(databasePath)
+	databaseInfo.Tables = GetTableInfos(ctx, databasePath)
 
 	return databaseInfo
 }
 
-func GetDatabaseInfos(databasePaths []string) []DatabaseInfo {
-	ctx := context.Background()
-	adminClient, err := database.NewDatabaseAdminClient(ctx)
-	if err != nil {
-		fmt.Println(err)
-		return []DatabaseInfo{}
-	}
-	defer adminClient.Close()
-
-	var databaseInfos []DatabaseInfo
-	for _, databasePath := range databasePaths {
-		databaseInfos = append(databaseInfos, GetDatabaseInfo(adminClient, databasePath))
+func GetDatabaseInfos(ctx context.Context, databasePaths []string) []DatabaseInfo {
+	databaseInfos := make([]DatabaseInfo, len(databasePaths))
+	for databaseIdx, databasePath := range databasePaths {
+		databaseInfos[databaseIdx] = GetDatabaseInfo(ctx, databasePath)
 	}
 	return databaseInfos
 }

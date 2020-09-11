@@ -13,8 +13,7 @@ import (
 	databasepb "google.golang.org/genproto/googleapis/spanner/admin/database/v1"
 )
 
-func ListProjects() []string {
-	ctx := context.Background()
+func ListProjects(ctx context.Context) []string {
 	cloudresourcemanagerService, err := cloudresourcemanager.NewService(ctx)
 	if err != nil {
 		fmt.Println(err)
@@ -35,22 +34,14 @@ func ListProjects() []string {
 	return result
 }
 
-func ListInstances(projects []string) []string {
-	ctx := context.Background()
-	client, err := instance.NewInstanceAdminClient(ctx)
-	if err != nil {
-		fmt.Println(err)
-		return []string{}
-	}
-	defer client.Close()
-
+func ListInstances(ctx context.Context, instanceClient *instance.InstanceAdminClient, projects []string) []string {
 	var instancesList []string
 	for _, project := range projects {
 		req := &instancepb.ListInstancesRequest{
 			Parent: project,
 		}
 
-		it := client.ListInstances(ctx, req)
+		it := instanceClient.ListInstances(ctx, req)
 
 		for {
 			resp, err := it.Next()
@@ -69,14 +60,12 @@ func ListInstances(projects []string) []string {
 	return instancesList
 }
 
-func ListDatabases(instances []string) []string {
-	ctx := context.Background()
-	adminClient, err := database.NewDatabaseAdminClient(ctx)
-	if err != nil {
-		fmt.Println(err)
-		return []string{}
-	}
-	defer adminClient.Close()
+func ListDatabases(ctx context.Context) []string {
+	instanceClient, _ := instance.NewInstanceAdminClient(ctx)
+	databaseClient, _ := database.NewDatabaseAdminClient(ctx)
+
+	projects := ListProjects(ctx)
+	instances := ListInstances(ctx, instanceClient, projects)
 
 	var listDatabases []string
 	for _, instance := range instances {
@@ -84,7 +73,7 @@ func ListDatabases(instances []string) []string {
 			Parent: instance,
 		}
 
-		it := adminClient.ListDatabases(ctx, req)
+		it := databaseClient.ListDatabases(ctx, req)
 		for {
 			resp, err := it.Next()
 			if err == iterator.Done {
