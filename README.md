@@ -33,3 +33,117 @@ Save the resulting json file somewhere on the filesystem, e.g. ```/home/user/tok
 In order to access a project with API, one needs to enable Cloud Resource Manager API for that project.
 
 Visit https://console.cloud.google.com/apis/library/cloudresourcemanager.googleapis.com, press the ```Enable``` button and choose your project. 
+
+## 4. Clone the repository
+
+```
+git clone https://github.com/ashagraev/cloud_spanner_api.git
+```
+
+## 5. Build the project and run it
+
+Build:
+```
+cd cloud_spanner_api/
+go build .
+```
+
+Run:
+```
+GOOGLE_APPLICATION_CREDENTIALS=/home/user/token.json ./cloud_spanner_api
+{
+  "Path": "projects/thematic-cider-289114/instances/habr-posts/databases/post_links",
+  "State": "READY",
+  "BytesSize": 0,
+  "Tables": [
+    {
+      "Name": "Github",
+      "Columns": [
+        {
+          "Name": "Url",
+          "Type": "STRING(1024)"
+        },
+        {
+          "Name": "Stars",
+          "Type": "INT64"
+        }
+      ],
+      "RowsCount": 4
+    },
+    {
+      "Name": "Posts",
+      "Columns": [
+        {
+          "Name": "Url",
+          "Type": "STRING(1024)"
+        },
+        {
+          "Name": "Likes",
+          "Type": "INT64"
+        },
+        {
+          "Name": "Date",
+          "Type": "DATE"
+        }
+      ],
+      "RowsCount": 4
+    }
+  ]
+}
+{
+  "Path": "projects/thematic-cider-289114/instances/habr-posts/databases/random_stuff",
+  "State": "READY",
+  "BytesSize": 0,
+  "Tables": [
+    {
+      "Name": "SocialNetwoks",
+      "Columns": [
+        {
+          "Name": "Link",
+          "Type": "STRING(1024)"
+        },
+        {
+          "Name": "Quality",
+          "Type": "INT64"
+        }
+      ],
+      "RowsCount": 3
+    }
+  ]
+}
+{
+  "Path": "projects/thematic-cider-289114/instances/second-instance/databases/blog_posts",
+  "State": "READY",
+  "BytesSize": 0,
+  "Tables": [
+    {
+      "Name": "LiveJournal",
+      "Columns": [
+        {
+          "Name": "Url",
+          "Type": "STRING(1024)"
+        },
+        {
+          "Name": "Comments",
+          "Type": "INT64"
+        }
+      ],
+      "RowsCount": 0
+    },
+    {
+      "Name": "Medium",
+      "Columns": [
+        {
+          "Name": "Url",
+          "Type": "STRING(1024)"
+        },
+        {
+          "Name": "Claps",
+          "Type": "INT64"
+        }
+      ],
+      "RowsCount": 4
+    }
+  ]
+}
+```
