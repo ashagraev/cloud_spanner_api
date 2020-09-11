@@ -34,7 +34,13 @@ func GetRowsCount(ctx context.Context, client *spanner.Client, table string) int
 }
 
 func GetTableInfos(ctx context.Context, databasePath string) []TableInfo {
-	client, _ := spanner.NewClient(ctx, databasePath)
+	client, _ := spanner.NewClientWithConfig(ctx, databasePath, spanner.ClientConfig{
+		SessionPoolConfig: spanner.SessionPoolConfig{
+			MinOpened: 1,
+			MaxOpened: 2,
+			MaxIdle:   1,
+			MaxBurst:  2,
+		}})
 	defer client.Close()
 
 	stmt := spanner.Statement{SQL: `
