@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	databasepb "google.golang.org/genproto/googleapis/spanner/admin/database/v1"
+	"sync"
 )
 
 type DatabaseInfo struct {
@@ -59,8 +60,14 @@ func GetDatabaseInfo(ctx context.Context, databasePath string) DatabaseInfo {
 
 func GetDatabaseInfos(ctx context.Context, databasePaths []string) []DatabaseInfo {
 	databaseInfos := make([]DatabaseInfo, len(databasePaths))
-	for databaseIdx, databasePath := range databasePaths {
-		databaseInfos[databaseIdx] = GetDatabaseInfo(ctx, databasePath)
+	var wg sync.WaitGroup
+	for databaseIdx := range databasePaths {
+		wg.Add(1)
+		go func(idx int) {
+			databaseInfos[idx] = GetDatabaseInfo(ctx, databasePaths[idx])
+			wg.Done()
+		}(databaseIdx)
 	}
+	wg.Wait()
 	return databaseInfos
 }
