@@ -1,8 +1,9 @@
 package main
 
 import (
-	"cloud.google.com/go/spanner"
 	"context"
+
+	"cloud.google.com/go/spanner"
 )
 
 type ColumnInfo struct {

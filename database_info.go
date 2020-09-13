@@ -2,12 +2,13 @@ package main
 
 import (
 	"bytes"
-	database "cloud.google.com/go/spanner/admin/database/apiv1"
 	"context"
 	"encoding/json"
 	"fmt"
-	databasepb "google.golang.org/genproto/googleapis/spanner/admin/database/v1"
 	"sync"
+
+	database "cloud.google.com/go/spanner/admin/database/apiv1"
+	databasepb "google.golang.org/genproto/googleapis/spanner/admin/database/v1"
 )
 
 type DatabaseInfo struct {
