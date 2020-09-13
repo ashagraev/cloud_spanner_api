@@ -8,9 +8,7 @@ import (
 )
 
 func ReportDatabases(ctx context.Context, databaseInfos []DatabaseInfo) error {
-	jsonLines := ctx.Value("json-lines") == true
-
-	if jsonLines == true {
+	if ctx.Value("json-lines") == true {
 		for _, databaseInfo := range databaseInfos {
 			databaseJson, err := databaseInfo.ToJson(false)
 			if err != nil {
