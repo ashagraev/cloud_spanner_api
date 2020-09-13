@@ -15,7 +15,7 @@ type DatabaseInfo struct {
 	Path  string
 	State string
 
-	Tables []TableInfo
+	Tables []TableInfo `json:"Tables,omitempty"`
 }
 
 func (databaseInfo DatabaseInfo) ToJson() (string, error) {
