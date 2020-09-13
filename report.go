@@ -10,11 +10,11 @@ import (
 func ReportDatabases(ctx context.Context, databaseInfos []DatabaseInfo) error {
 	if ctx.Value("json-lines") == true {
 		for _, databaseInfo := range databaseInfos {
-			databaseJson, err := databaseInfo.ToJson(false)
+			databaseJSON, err := databaseInfo.ToJSON(false)
 			if err != nil {
 				return err
 			}
-			fmt.Println(databaseJson)
+			fmt.Println(databaseJSON)
 		}
 		return nil
 	}

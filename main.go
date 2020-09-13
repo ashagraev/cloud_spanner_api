@@ -13,6 +13,7 @@ func main() {
 		fmt.Fprint(os.Stderr, err)
 		os.Exit(1)
 	}
+
 	databaseInfos, err := GetDatabaseInfos(ctx, databases)
 	if err != nil {
 		fmt.Fprint(os.Stderr, err)

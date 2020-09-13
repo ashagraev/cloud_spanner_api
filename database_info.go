@@ -18,7 +18,7 @@ type DatabaseInfo struct {
 	Tables []TableInfo `json:"Tables,omitempty"`
 }
 
-func (databaseInfo DatabaseInfo) ToJson(pretty bool) (string, error) {
+func (databaseInfo DatabaseInfo) ToJSON(pretty bool) (string, error) {
 	simpleJSON, err := json.Marshal(databaseInfo)
 	if err != nil {
 		return "", err
