@@ -15,11 +15,15 @@ func PrepareContext() context.Context {
 	noTablesExport := false
 	flag.BoolVar(&noTablesExport, "no-tables", noTablesExport, "do not export detailed tables information")
 
+	noGoroutines := false
+	flag.BoolVar(&noGoroutines, "no-goroutines", noGoroutines, "do not use goroutines for databases load")
+
 	flag.Parse()
 
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, "verbose", verbose)
 	ctx = context.WithValue(ctx, "no-tables", noTablesExport)
+	ctx = context.WithValue(ctx, "no-goroutines", noGoroutines)
 
 	return ctx
 }

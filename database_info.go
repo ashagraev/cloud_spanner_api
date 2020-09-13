@@ -76,14 +76,25 @@ func GetDatabaseInfos(ctx context.Context, databasePaths []string) ([]DatabaseIn
 	errs, ctx := errgroup.WithContext(ctx)
 	for databaseIdx := range databasePaths {
 		databaseIdx := databaseIdx // https://golang.org/doc/faq#closures_and_goroutines
-		errs.Go(func() error {
-			dbInfo, err := GetDatabaseInfo(ctx, databasePaths[databaseIdx])
+
+		setupDatabaseInfo := func(idx int) error {
+			dbInfo, err := GetDatabaseInfo(ctx, databasePaths[idx])
 			if err != nil {
 				return err
 			}
-			databaseInfos[databaseIdx] = dbInfo
+			databaseInfos[idx] = dbInfo
 			return nil
-		})
+		}
+
+		if ctx.Value("no-goroutines") == true {
+			if err := setupDatabaseInfo(databaseIdx); err != nil {
+				return databaseInfos, err
+			}
+		} else {
+			errs.Go(func() error {
+				return setupDatabaseInfo(databaseIdx)
+			})
+		}
 	}
 	err := errs.Wait()
 	return databaseInfos, err
