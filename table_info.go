@@ -13,7 +13,7 @@ type ColumnInfo struct {
 type TableInfo struct {
 	Name string
 
-	Columns []ColumnInfo
+	Columns   []ColumnInfo
 	RowsCount int64
 }
 
@@ -63,7 +63,8 @@ func GetTableInfos(ctx context.Context, databasePath string) []TableInfo {
 		var columnName, tableName, spannerType string
 		row.Columns(&columnName, &tableName, &spannerType)
 
-		index, ok := tables[tableName]; if !ok {
+		index, ok := tables[tableName]
+		if !ok {
 			index = len(tableInfos)
 			tables[tableName] = index
 

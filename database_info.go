@@ -11,7 +11,7 @@ import (
 )
 
 type DatabaseInfo struct {
-	Path string
+	Path  string
 	State string
 
 	Tables []TableInfo

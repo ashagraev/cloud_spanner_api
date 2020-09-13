@@ -29,7 +29,7 @@ func ListProjects(ctx context.Context) []string {
 
 	var result []string
 	for _, p := range response.Projects {
-		result = append(result, "projects/" + p.ProjectId)
+		result = append(result, "projects/"+p.ProjectId)
 	}
 	return result
 }
