@@ -19,6 +19,7 @@ export GOROOT=/usr/local/go
 export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
 
 go get cloud.google.com/go/spanner
+go get golang.org/x/sync/errgroup
 ```
 
 ## 2. Create the API credentials

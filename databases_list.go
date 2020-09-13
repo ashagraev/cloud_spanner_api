@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"google.golang.org/api/cloudresourcemanager/v1"
 	"google.golang.org/api/iterator"
 
@@ -13,28 +12,26 @@ import (
 	databasepb "google.golang.org/genproto/googleapis/spanner/admin/database/v1"
 )
 
-func ListProjects(ctx context.Context) []string {
+func ListProjects(ctx context.Context) ([]string, error) {
 	cloudresourcemanagerService, err := cloudresourcemanager.NewService(ctx)
 	if err != nil {
-		fmt.Println(err)
-		return []string{}
+		return []string{}, err
 	}
 
 	request := cloudresourcemanagerService.Projects.List()
 	response, err := request.Do()
 	if err != nil {
-		fmt.Print(err)
-		return []string{}
+		return []string{}, err
 	}
 
 	var result []string
 	for _, p := range response.Projects {
 		result = append(result, "projects/"+p.ProjectId)
 	}
-	return result
+	return result, nil
 }
 
-func ListInstances(ctx context.Context, instanceClient *instance.InstanceAdminClient, projects []string) []string {
+func ListInstances(ctx context.Context, instanceClient *instance.InstanceAdminClient, projects []string) ([]string, error) {
 	var instancesList []string
 	for _, project := range projects {
 		req := &instancepb.ListInstancesRequest{
@@ -50,22 +47,33 @@ func ListInstances(ctx context.Context, instanceClient *instance.InstanceAdminCl
 				break
 			}
 			if err != nil {
-				fmt.Println(err)
-				break
+				return []string{}, err
 			}
 			instancesList = append(instancesList, resp.Name)
 		}
 	}
 
-	return instancesList
+	return instancesList, nil
 }
 
-func ListDatabases(ctx context.Context) []string {
-	instanceClient, _ := instance.NewInstanceAdminClient(ctx)
-	databaseClient, _ := database.NewDatabaseAdminClient(ctx)
+func ListDatabases(ctx context.Context) ([]string, error) {
+	instanceClient, err := instance.NewInstanceAdminClient(ctx)
+	if err != nil {
+		return []string{}, err
+	}
+	databaseClient, err := database.NewDatabaseAdminClient(ctx)
+	if err != nil {
+		return []string{}, err
+	}
 
-	projects := ListProjects(ctx)
-	instances := ListInstances(ctx, instanceClient, projects)
+	projects, err := ListProjects(ctx)
+	if err != nil {
+		return []string{}, err
+	}
+	instances, err := ListInstances(ctx, instanceClient, projects)
+	if err != nil {
+		return []string{}, err
+	}
 
 	var listDatabases []string
 	for _, instance := range instances {
@@ -80,11 +88,10 @@ func ListDatabases(ctx context.Context) []string {
 				break
 			}
 			if err != nil {
-				fmt.Println(err)
-				break
+				return []string{}, err
 			}
 			listDatabases = append(listDatabases, resp.Name)
 		}
 	}
-	return listDatabases
+	return listDatabases, nil
 }

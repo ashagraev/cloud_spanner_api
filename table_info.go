@@ -18,23 +18,23 @@ type TableInfo struct {
 	RowsCount int64
 }
 
-func GetRowsCount(ctx context.Context, client *spanner.Client, table string) int64 {
+func GetRowsCount(ctx context.Context, client *spanner.Client, table string) (int64, error) {
 	stmt := spanner.Statement{SQL: `SELECT COUNT(*) as count FROM ` + table}
 
 	iter := client.Single().Query(ctx, stmt)
 	defer iter.Stop()
 
 	var rowsCount int64
-	iter.Do(func(row *spanner.Row) error {
+	err := iter.Do(func(row *spanner.Row) error {
 		if err := row.Columns(&rowsCount); err != nil {
 			return err
 		}
 		return nil
 	})
-	return rowsCount
+	return rowsCount, err
 }
 
-func GetTableInfos(ctx context.Context, databasePath string) []TableInfo {
+func GetTableInfos(ctx context.Context, databasePath string) ([]TableInfo, error) {
 	client, _ := spanner.NewClientWithConfig(ctx, databasePath, spanner.ClientConfig{
 		SessionPoolConfig: spanner.SessionPoolConfig{
 			MinOpened: 1,
@@ -60,7 +60,7 @@ func GetTableInfos(ctx context.Context, databasePath string) []TableInfo {
 	var tableInfos []TableInfo
 	tables := make(map[string]int)
 
-	iter.Do(func(row *spanner.Row) error {
+	error := iter.Do(func(row *spanner.Row) error {
 		var columnName, tableName, spannerType string
 		row.Columns(&columnName, &tableName, &spannerType)
 
@@ -71,7 +71,11 @@ func GetTableInfos(ctx context.Context, databasePath string) []TableInfo {
 
 			var tableInfo TableInfo
 			tableInfo.Name = tableName
-			tableInfo.RowsCount = GetRowsCount(ctx, client, tableName)
+			rowsCount, err := GetRowsCount(ctx, client, tableName)
+			if err != nil {
+				return err
+			}
+			tableInfo.RowsCount = rowsCount
 			tableInfos = append(tableInfos, tableInfo)
 		}
 
@@ -80,5 +84,5 @@ func GetTableInfos(ctx context.Context, databasePath string) []TableInfo {
 		return nil
 	})
 
-	return tableInfos
+	return tableInfos, error
 }

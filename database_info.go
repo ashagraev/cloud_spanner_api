@@ -4,8 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
-	"sync"
+	"golang.org/x/sync/errgroup"
 
 	database "cloud.google.com/go/spanner/admin/database/apiv1"
 	databasepb "google.golang.org/genproto/googleapis/spanner/admin/database/v1"
@@ -18,21 +17,27 @@ type DatabaseInfo struct {
 	Tables []TableInfo
 }
 
-func (databaseInfo DatabaseInfo) ToJson() string {
-	resp, _ := json.Marshal(databaseInfo)
-	return string(resp)
+func (databaseInfo DatabaseInfo) ToJson() (string, error) {
+	resp, err := json.Marshal(databaseInfo)
+	if err != nil {
+		return "", err
+	}
+	return string(resp), nil
 }
 
-func (databaseInfo DatabaseInfo) ToJsonPretty() string {
-	simpleJson, _ := json.Marshal(databaseInfo)
+func (databaseInfo DatabaseInfo) ToJsonPretty() (string, error) {
+	simpleJson, err := json.Marshal(databaseInfo)
+	if err != nil {
+		return "", err
+	}
 
 	var prettyJSON bytes.Buffer
 	json.Indent(&prettyJSON, simpleJson, "", "  ")
 
-	return prettyJSON.String()
+	return prettyJSON.String(), nil
 }
 
-func GetDatabaseInfo(ctx context.Context, databasePath string) DatabaseInfo {
+func GetDatabaseInfo(ctx context.Context, databasePath string) (DatabaseInfo, error) {
 	var databaseInfo DatabaseInfo
 	databaseInfo.Path = databasePath
 
@@ -42,33 +47,39 @@ func GetDatabaseInfo(ctx context.Context, databasePath string) DatabaseInfo {
 
 	databaseAdminClient, err := database.NewDatabaseAdminClient(ctx)
 	if err != nil {
-		fmt.Println(err)
-		return DatabaseInfo{}
+		return databaseInfo, err
 	}
 	defer databaseAdminClient.Close()
 
 	resp, err := databaseAdminClient.GetDatabase(ctx, getDatabaseRequest)
 	if err != nil {
-		fmt.Println(err)
-		return databaseInfo
+		return databaseInfo, err
 	}
 
 	databaseInfo.State = resp.GetState().String()
-	databaseInfo.Tables = GetTableInfos(ctx, databasePath)
+	tables, err := GetTableInfos(ctx, databasePath)
+	if err != nil {
+		return databaseInfo, err
+	}
+	databaseInfo.Tables = tables
 
-	return databaseInfo
+	return databaseInfo, nil
 }
 
-func GetDatabaseInfos(ctx context.Context, databasePaths []string) []DatabaseInfo {
+func GetDatabaseInfos(ctx context.Context, databasePaths []string) ([]DatabaseInfo, error) {
 	databaseInfos := make([]DatabaseInfo, len(databasePaths))
-	var wg sync.WaitGroup
+	errs, ctx := errgroup.WithContext(ctx)
 	for databaseIdx := range databasePaths {
-		wg.Add(1)
-		go func(idx int) {
-			databaseInfos[idx] = GetDatabaseInfo(ctx, databasePaths[idx])
-			wg.Done()
-		}(databaseIdx)
+		databaseIdx := databaseIdx // https://golang.org/doc/faq#closures_and_goroutines
+		errs.Go(func() error {
+			dbInfo, err := GetDatabaseInfo(ctx, databasePaths[databaseIdx])
+			if err != nil {
+				return err
+			}
+			databaseInfos[databaseIdx] = dbInfo
+			return nil
+		})
 	}
-	wg.Wait()
-	return databaseInfos
+	err := errs.Wait()
+	return databaseInfos, err
 }
