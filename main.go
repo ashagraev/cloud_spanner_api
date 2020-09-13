@@ -8,7 +8,7 @@ import (
 
 func main() {
 	// some windows stuff
-	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "C:\\Users\\alex-\\OneDrive\\Desktop\\google-cloud-key.json")
+	// os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "C:\\Users\\alex-\\OneDrive\\Desktop\\google-cloud-key.json")
 
 	ctx := context.Background()
 
