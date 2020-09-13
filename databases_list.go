@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+
 	"google.golang.org/api/cloudresourcemanager/v1"
 	"google.golang.org/api/iterator"
 
@@ -27,6 +28,7 @@ func ListProjects(ctx context.Context) ([]string, error) {
 	var result []string
 	for _, p := range response.Projects {
 		result = append(result, "projects/"+p.ProjectId)
+		LogProjectLoad(ctx, p.ProjectId)
 	}
 	return result, nil
 }
@@ -50,6 +52,7 @@ func ListInstances(ctx context.Context, instanceClient *instance.InstanceAdminCl
 				return []string{}, err
 			}
 			instancesList = append(instancesList, resp.Name)
+			LogInstanceLoad(ctx, resp.Name)
 		}
 	}
 
@@ -91,6 +94,7 @@ func ListDatabases(ctx context.Context) ([]string, error) {
 				return []string{}, err
 			}
 			listDatabases = append(listDatabases, resp.Name)
+			LogDataBaseLoad(ctx, resp.Name)
 		}
 	}
 	return listDatabases, nil

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+
 	"golang.org/x/sync/errgroup"
 
 	database "cloud.google.com/go/spanner/admin/database/apiv1"
@@ -55,6 +56,7 @@ func GetDatabaseInfo(ctx context.Context, databasePath string) (DatabaseInfo, er
 	if err != nil {
 		return databaseInfo, err
 	}
+	LogDatabaseStateLoad(ctx, databasePath)
 
 	databaseInfo.State = resp.GetState().String()
 	tables, err := GetTableInfos(ctx, databasePath)

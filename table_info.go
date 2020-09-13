@@ -75,8 +75,11 @@ func GetTableInfos(ctx context.Context, databasePath string) ([]TableInfo, error
 			if err != nil {
 				return err
 			}
+			LogTableRowsCountLoad(ctx, databasePath+"/"+tableName)
+
 			tableInfo.RowsCount = rowsCount
 			tableInfos = append(tableInfos, tableInfo)
+			LogTableInfoLoad(ctx, databasePath+"/"+tableName)
 		}
 
 		tableInfos[index].Columns = append(tableInfos[index].Columns, ColumnInfo{Name: columnName, Type: spannerType})
