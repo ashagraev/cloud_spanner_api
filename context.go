@@ -11,10 +11,15 @@ func PrepareContext() context.Context {
 
 	verbose := false
 	flag.BoolVar(&verbose, "verbose", verbose, "be verbose")
+
+	noTablesExport := false
+	flag.BoolVar(&noTablesExport, "no-tables", noTablesExport, "do not export detailed tables information")
+
 	flag.Parse()
 
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, "verbose", verbose)
+	ctx = context.WithValue(ctx, "no-tables", noTablesExport)
 
 	return ctx
 }

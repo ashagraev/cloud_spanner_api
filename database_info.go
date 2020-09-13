@@ -59,11 +59,14 @@ func GetDatabaseInfo(ctx context.Context, databasePath string) (DatabaseInfo, er
 	LogDatabaseStateLoad(ctx, databasePath)
 
 	databaseInfo.State = resp.GetState().String()
-	tables, err := GetTableInfos(ctx, databasePath)
-	if err != nil {
-		return databaseInfo, err
+
+	if ctx.Value("no-tables") == false {
+		tables, err := GetTableInfos(ctx, databasePath)
+		if err != nil {
+			return databaseInfo, err
+		}
+		databaseInfo.Tables = tables
 	}
-	databaseInfo.Tables = tables
 
 	return databaseInfo, nil
 }
