@@ -51,8 +51,99 @@ go build .
 
 Run:
 ```
-GOOGLE_APPLICATION_CREDENTIALS=/home/user/token.json ./cloud_spanner_api
-{"Path":"projects/thematic-cider-289114/instances/habr-posts/databases/post_links","State":"READY","Tables":[{"Name":"Github","Columns":[{"Name":"Url","Type":"STRING(1024)"},{"Name":"Stars","Type":"INT64"}],"RowsCount":4},{"Name":"Posts","Columns":[{"Name":"Url","Type":"STRING(1024)"},{"Name":"Likes","Type":"INT64"},{"Name":"Date","Type":"DATE"}],"RowsCount":4}]}
-{"Path":"projects/thematic-cider-289114/instances/habr-posts/databases/random_stuff","State":"READY","Tables":[{"Name":"SocialNetwoks","Columns":[{"Name":"Link","Type":"STRING(1024)"},{"Name":"Quality","Type":"INT64"}],"RowsCount":3}]}
-{"Path":"projects/thematic-cider-289114/instances/second-instance/databases/blog_posts","State":"READY","Tables":[{"Name":"LiveJournal","Columns":[{"Name":"Url","Type":"STRING(1024)"},{"Name":"Comments","Type":"INT64"}],"RowsCount":0},{"Name":"Medium","Columns":[{"Name":"Url","Type":"STRING(1024)"},{"Name":"Claps","Type":"INT64"}],"RowsCount":4}]}
+GOOGLE_APPLICATION_CREDENTIALS=/home/user/token.json ./cloud_spanner_api --pretty
+[
+  {
+    "Path": "projects/thematic-cider-289114/instances/habr-posts/databases/post_links",
+    "State": "READY",
+    "Tables": [
+      {
+        "Name": "Github",
+        "Columns": [
+          {
+            "Name": "Url",
+            "Type": "STRING(1024)"
+          },
+          {
+            "Name": "Stars",
+            "Type": "INT64"
+          }
+        ],
+        "RowsCount": 4
+      },
+      {
+        "Name": "Posts",
+        "Columns": [
+          {
+            "Name": "Url",
+            "Type": "STRING(1024)"
+          },
+          {
+            "Name": "Likes",
+            "Type": "INT64"
+          },
+          {
+            "Name": "Date",
+            "Type": "DATE"
+          }
+        ],
+        "RowsCount": 4
+      }
+    ]
+  },
+  {
+    "Path": "projects/thematic-cider-289114/instances/habr-posts/databases/random_stuff",
+    "State": "READY",
+    "Tables": [
+      {
+        "Name": "SocialNetwoks",
+        "Columns": [
+          {
+            "Name": "Link",
+            "Type": "STRING(1024)"
+          },
+          {
+            "Name": "Quality",
+            "Type": "INT64"
+          }
+        ],
+        "RowsCount": 3
+      }
+    ]
+  },
+  {
+    "Path": "projects/thematic-cider-289114/instances/second-instance/databases/blog_posts",
+    "State": "READY",
+    "Tables": [
+      {
+        "Name": "LiveJournal",
+        "Columns": [
+          {
+            "Name": "Url",
+            "Type": "STRING(1024)"
+          },
+          {
+            "Name": "Comments",
+            "Type": "INT64"
+          }
+        ],
+        "RowsCount": 0
+      },
+      {
+        "Name": "Medium",
+        "Columns": [
+          {
+            "Name": "Url",
+            "Type": "STRING(1024)"
+          },
+          {
+            "Name": "Claps",
+            "Type": "INT64"
+          }
+        ],
+        "RowsCount": 4
+      }
+    ]
+  }
+]
 ```
