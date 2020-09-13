@@ -27,8 +27,8 @@ func main() {
 		databaseJson, err := databaseInfo.ToJson()
 		if err != nil {
 			fmt.Fprint(os.Stderr, err)
-		} else {
-			fmt.Println(databaseJson)
+			continue
 		}
+		fmt.Println(databaseJson)
 	}
 }
