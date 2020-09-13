@@ -19,12 +19,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	for _, databaseInfo := range databaseInfos {
-		databaseJson, err := databaseInfo.ToJson()
-		if err != nil {
-			fmt.Fprint(os.Stderr, err)
-			continue
-		}
-		fmt.Println(databaseJson)
+	err = ReportDatabases(ctx, databaseInfos)
+	if err != nil {
+		fmt.Fprint(os.Stderr, err)
+		os.Exit(1)
 	}
 }

@@ -18,12 +18,21 @@ func PrepareContext() context.Context {
 	noGoroutines := false
 	flag.BoolVar(&noGoroutines, "no-goroutines", noGoroutines, "do not use goroutines for databases load")
 
+	jsonLines := false
+	flag.BoolVar(&jsonLines, "json-lines", jsonLines, "export each database information on in a separate json line")
+
+	jsonPretty := false
+	flag.BoolVar(&jsonPretty, "pretty", jsonPretty, "prettify json output")
+
 	flag.Parse()
 
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, "verbose", verbose)
 	ctx = context.WithValue(ctx, "no-tables", noTablesExport)
 	ctx = context.WithValue(ctx, "no-goroutines", noGoroutines)
+
+	ctx = context.WithValue(ctx, "json-lines", jsonLines)
+	ctx = context.WithValue(ctx, "json-pretty", jsonPretty)
 
 	return ctx
 }

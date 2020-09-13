@@ -18,23 +18,20 @@ type DatabaseInfo struct {
 	Tables []TableInfo `json:"Tables,omitempty"`
 }
 
-func (databaseInfo DatabaseInfo) ToJson() (string, error) {
-	resp, err := json.Marshal(databaseInfo)
+func (databaseInfo DatabaseInfo) ToJson(pretty bool) (string, error) {
+	simpleJSON, err := json.Marshal(databaseInfo)
 	if err != nil {
 		return "", err
 	}
-	return string(resp), nil
-}
 
-func (databaseInfo DatabaseInfo) ToJsonPretty() (string, error) {
-	simpleJson, err := json.Marshal(databaseInfo)
-	if err != nil {
-		return "", err
+	if !pretty {
+		return string(simpleJSON), nil
 	}
 
 	var prettyJSON bytes.Buffer
-	json.Indent(&prettyJSON, simpleJson, "", "  ")
-
+	if err := json.Indent(&prettyJSON, simpleJSON, "", "  "); err != nil {
+		return "", err
+	}
 	return prettyJSON.String(), nil
 }
 
