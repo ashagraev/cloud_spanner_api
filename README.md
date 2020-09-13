@@ -147,3 +147,15 @@ GOOGLE_APPLICATION_CREDENTIALS=/home/user/token.json ./cloud_spanner_api --prett
   }
 ]
 ```
+
+## 6. Command line options
+
+```--no-tables```: do not export detailed tables information
+
+```--verbose```: turn on loading process logging
+
+```--json-lines```: export each database information on a separate json line
+
+```--pretty```: prettify json output
+
+```--no-goroutines```: do not use goroutines while loading databases information
