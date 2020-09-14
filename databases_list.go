@@ -16,13 +16,13 @@ import (
 func ListProjects(ctx context.Context) ([]string, error) {
 	cloudresourcemanagerService, err := cloudresourcemanager.NewService(ctx)
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
 
 	request := cloudresourcemanagerService.Projects.List()
 	response, err := request.Do()
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
 
 	var result []string
@@ -49,7 +49,7 @@ func ListInstances(ctx context.Context, instanceClient *instance.InstanceAdminCl
 				break
 			}
 			if err != nil {
-				return []string{}, err
+				return nil, err
 			}
 			instancesList = append(instancesList, resp.Name)
 			LogInstanceLoad(ctx, resp.Name)
@@ -62,20 +62,20 @@ func ListInstances(ctx context.Context, instanceClient *instance.InstanceAdminCl
 func ListDatabases(ctx context.Context) ([]string, error) {
 	instanceClient, err := instance.NewInstanceAdminClient(ctx)
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
 	databaseClient, err := database.NewDatabaseAdminClient(ctx)
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
 
 	projects, err := ListProjects(ctx)
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
 	instances, err := ListInstances(ctx, instanceClient, projects)
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
 
 	var listDatabases []string
@@ -91,7 +91,7 @@ func ListDatabases(ctx context.Context) ([]string, error) {
 				break
 			}
 			if err != nil {
-				return []string{}, err
+				return nil, err
 			}
 			listDatabases = append(listDatabases, resp.Name)
 			LogDataBaseLoad(ctx, resp.Name)
