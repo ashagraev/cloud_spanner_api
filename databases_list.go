@@ -4,14 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	databasepb "google.golang.org/genproto/googleapis/spanner/admin/database/v1"
+
 	"google.golang.org/api/cloudresourcemanager/v1"
 	"google.golang.org/api/iterator"
 
-	instance "cloud.google.com/go/spanner/admin/instance/apiv1"
 	instancepb "google.golang.org/genproto/googleapis/spanner/admin/instance/v1"
-
-	database "cloud.google.com/go/spanner/admin/database/apiv1"
-	databasepb "google.golang.org/genproto/googleapis/spanner/admin/database/v1"
 )
 
 func ListProjects(ctx context.Context) ([]string, error) {
@@ -34,14 +32,14 @@ func ListProjects(ctx context.Context) ([]string, error) {
 	return result, nil
 }
 
-func ListInstances(ctx context.Context, instanceClient *instance.InstanceAdminClient, projects []string) ([]string, error) {
+func (db *DatabaseClient) ListInstances(ctx context.Context, projects []string) ([]string, error) {
 	var instancesList []string
 	for _, project := range projects {
 		req := &instancepb.ListInstancesRequest{
 			Parent: project,
 		}
 
-		it := instanceClient.ListInstances(ctx, req)
+		it := db.instanceAdminClient.ListInstances(ctx, req)
 		for {
 			resp, err := it.Next()
 
@@ -59,21 +57,12 @@ func ListInstances(ctx context.Context, instanceClient *instance.InstanceAdminCl
 	return instancesList, nil
 }
 
-func ListDatabases(ctx context.Context) ([]string, error) {
-	instanceClient, err := instance.NewInstanceAdminClient(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("NewInstanceAdminClient error: %v", err)
-	}
-	databaseClient, err := database.NewDatabaseAdminClient(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("NewDatabaseAdminClient error: %v", err)
-	}
-
+func (db *DatabaseClient) ListDatabases(ctx context.Context) ([]string, error) {
 	projects, err := ListProjects(ctx)
 	if err != nil {
 		return nil, err
 	}
-	instances, err := ListInstances(ctx, instanceClient, projects)
+	instances, err := db.ListInstances(ctx, projects)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +73,7 @@ func ListDatabases(ctx context.Context) ([]string, error) {
 			Parent: instance,
 		}
 
-		it := databaseClient.ListDatabases(ctx, req)
+		it := db.databaseAdminClient.ListDatabases(ctx, req)
 		for {
 			resp, err := it.Next()
 			if err == iterator.Done {

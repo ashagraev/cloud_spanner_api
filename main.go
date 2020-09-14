@@ -8,13 +8,20 @@ import (
 func main() {
 	ctx := PrepareContext()
 
-	databases, err := ListDatabases(ctx)
+	db, err := NewDatabaseClient(ctx)
+	if err != nil {
+		fmt.Fprint(os.Stderr, err)
+		os.Exit(1)
+	}
+	defer db.Close()
+
+	databases, err := db.ListDatabases(ctx)
 	if err != nil {
 		fmt.Fprint(os.Stderr, err)
 		os.Exit(1)
 	}
 
-	databaseInfos, err := GetDatabaseInfos(ctx, databases)
+	databaseInfos, err := db.GetDatabaseInfos(ctx, databases)
 	if err != nil {
 		fmt.Fprint(os.Stderr, err)
 		os.Exit(1)

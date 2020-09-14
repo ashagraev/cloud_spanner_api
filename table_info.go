@@ -19,10 +19,33 @@ type TableInfo struct {
 	RowsCount int64
 }
 
-func GetRowsCount(ctx context.Context, client *spanner.Client, table string) (int64, error) {
+type TableClient struct {
+	client *spanner.Client
+	path   string
+}
+
+func NewTableClient(ctx context.Context, databasePath string) (*TableClient, error) {
+	client, err := spanner.NewClientWithConfig(ctx, databasePath, spanner.ClientConfig{
+		SessionPoolConfig: spanner.SessionPoolConfig{
+			MinOpened: 1,
+			MaxOpened: 2,
+			MaxIdle:   1,
+			MaxBurst:  2,
+		}})
+	if err != nil {
+		return nil, fmt.Errorf("spanner.NewClientWithConfig(%v) error: %v", databasePath, err)
+	}
+	return &TableClient{client: client}, nil
+}
+
+func (tc *TableClient) Close() {
+	tc.client.Close()
+}
+
+func (tc *TableClient) GetRowsCount(ctx context.Context, table string) (int64, error) {
 	stmt := spanner.Statement{SQL: `SELECT COUNT(*) as count FROM ` + table}
 
-	iter := client.Single().Query(ctx, stmt)
+	iter := tc.client.Single().Query(ctx, stmt)
 	defer iter.Stop()
 
 	var rowsCount int64
@@ -38,16 +61,7 @@ func GetRowsCount(ctx context.Context, client *spanner.Client, table string) (in
 	return rowsCount, nil
 }
 
-func GetTableInfos(ctx context.Context, databasePath string) ([]*TableInfo, error) {
-	client, _ := spanner.NewClientWithConfig(ctx, databasePath, spanner.ClientConfig{
-		SessionPoolConfig: spanner.SessionPoolConfig{
-			MinOpened: 1,
-			MaxOpened: 2,
-			MaxIdle:   1,
-			MaxBurst:  2,
-		}})
-	defer client.Close()
-
+func (tc *TableClient) GetTableInfos(ctx context.Context) ([]*TableInfo, error) {
 	stmt := spanner.Statement{SQL: `
 		SELECT
 			column_name,
@@ -58,7 +72,7 @@ func GetTableInfos(ctx context.Context, databasePath string) ([]*TableInfo, erro
 		WHERE table_catalog = '' AND table_schema = ''
 	`}
 
-	iter := client.Single().Query(ctx, stmt)
+	iter := tc.client.Single().Query(ctx, stmt)
 	defer iter.Stop()
 
 	var tableInfos []*TableInfo
@@ -66,7 +80,10 @@ func GetTableInfos(ctx context.Context, databasePath string) ([]*TableInfo, erro
 
 	err := iter.Do(func(row *spanner.Row) error {
 		var columnName, tableName, spannerType string
-		row.Columns(&columnName, &tableName, &spannerType)
+		err := row.Columns(&columnName, &tableName, &spannerType)
+		if err != nil {
+			return fmt.Errorf("spanner.Row.Columns() error processing %v: %v", tc.path, err)
+		}
 
 		index, ok := tables[tableName]
 		if !ok {
@@ -75,15 +92,15 @@ func GetTableInfos(ctx context.Context, databasePath string) ([]*TableInfo, erro
 
 			var tableInfo TableInfo
 			tableInfo.Name = tableName
-			rowsCount, err := GetRowsCount(ctx, client, tableName)
+			rowsCount, err := tc.GetRowsCount(ctx, tableName)
 			if err != nil {
 				return err
 			}
-			LogTableRowsCountLoad(ctx, databasePath+"/"+tableName)
+			LogTableRowsCountLoad(ctx, tc.path+"/"+tableName)
 
 			tableInfo.RowsCount = rowsCount
 			tableInfos = append(tableInfos, &tableInfo)
-			LogTableInfoLoad(ctx, databasePath+"/"+tableName)
+			LogTableInfoLoad(ctx, tc.path+"/"+tableName)
 		}
 
 		tableInfos[index].Columns = append(tableInfos[index].Columns, ColumnInfo{Name: columnName, Type: spannerType})

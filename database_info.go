@@ -8,7 +8,6 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	database "cloud.google.com/go/spanner/admin/database/apiv1"
 	databasepb "google.golang.org/genproto/googleapis/spanner/admin/database/v1"
 )
 
@@ -36,7 +35,7 @@ func (databaseInfo DatabaseInfo) ToJSON(pretty bool) (string, error) {
 	return prettyJSON.String(), nil
 }
 
-func GetDatabaseInfo(ctx context.Context, databasePath string) (*DatabaseInfo, error) {
+func (db *DatabaseClient) GetDatabaseInfo(ctx context.Context, databasePath string) (*DatabaseInfo, error) {
 	var databaseInfo DatabaseInfo
 	databaseInfo.Path = databasePath
 
@@ -44,13 +43,7 @@ func GetDatabaseInfo(ctx context.Context, databasePath string) (*DatabaseInfo, e
 		Name: databasePath,
 	}
 
-	databaseAdminClient, err := database.NewDatabaseAdminClient(ctx)
-	if err != nil {
-		return &databaseInfo, fmt.Errorf("NewDatabaseAdminClient(%v) error: %v", databasePath, err)
-	}
-	defer databaseAdminClient.Close()
-
-	resp, err := databaseAdminClient.GetDatabase(ctx, getDatabaseRequest)
+	resp, err := db.databaseAdminClient.GetDatabase(ctx, getDatabaseRequest)
 	if err != nil {
 		return &databaseInfo, fmt.Errorf("DatabaseAdminClient.GetDatabase(%v) error: %v", databasePath, err)
 	}
@@ -58,8 +51,13 @@ func GetDatabaseInfo(ctx context.Context, databasePath string) (*DatabaseInfo, e
 
 	databaseInfo.State = resp.GetState().String()
 
+	tc, err := NewTableClient(ctx, databasePath)
+	if err != nil {
+		return &databaseInfo, err
+	}
+
 	if ctx.Value("no-tables") == false {
-		tables, err := GetTableInfos(ctx, databasePath)
+		tables, err := tc.GetTableInfos(ctx)
 		if err != nil {
 			return &databaseInfo, err
 		}
@@ -69,14 +67,14 @@ func GetDatabaseInfo(ctx context.Context, databasePath string) (*DatabaseInfo, e
 	return &databaseInfo, nil
 }
 
-func GetDatabaseInfos(ctx context.Context, databasePaths []string) ([]*DatabaseInfo, error) {
+func (db *DatabaseClient) GetDatabaseInfos(ctx context.Context, databasePaths []string) ([]*DatabaseInfo, error) {
 	databaseInfos := make([]*DatabaseInfo, len(databasePaths))
 	errs, ctx := errgroup.WithContext(ctx)
 	for databaseIdx := range databasePaths {
 		databaseIdx := databaseIdx // https://golang.org/doc/faq#closures_and_goroutines
 
 		setupDatabaseInfo := func(idx int) error {
-			dbInfo, err := GetDatabaseInfo(ctx, databasePaths[idx])
+			dbInfo, err := db.GetDatabaseInfo(ctx, databasePaths[idx])
 			if err != nil {
 				return err
 			}
