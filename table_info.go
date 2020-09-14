@@ -26,13 +26,16 @@ func GetRowsCount(ctx context.Context, client *spanner.Client, table string) (in
 	defer iter.Stop()
 
 	var rowsCount int64
-	err := iter.Do(func(row *spanner.Row) error {
-		if err := row.Columns(&rowsCount); err != nil {
-			return fmt.Errorf("spanner.Row.Columns() error for table %v: %v", table, err)
-		}
-		return nil
-	})
-	return rowsCount, err
+	row, err := iter.Next()
+	if err != nil {
+		return rowsCount, fmt.Errorf("iter.Next() error for table %v: %v", table, err)
+	}
+
+	if err := row.Columns(&rowsCount); err != nil {
+		return rowsCount, fmt.Errorf("spanner.Row.Columns() error for table %v: %v", table, err)
+	}
+
+	return rowsCount, nil
 }
 
 func GetTableInfos(ctx context.Context, databasePath string) ([]TableInfo, error) {
