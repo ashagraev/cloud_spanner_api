@@ -13,10 +13,14 @@ import (
 
 // DatabaseInfo stores basic information about a specific Cloud Spanner database.
 type DatabaseInfo struct {
-	Path  string
+	// Path of a Spanner database.
+	Path string
+
+	// State of a Spanner database (e.g., "READY").
 	State string
 
-	Tables []*TableInfo `json:"Tables,omitempty"`
+	// Tables list of a Spanner database.
+	Tables []*TableInfo `json:"Tables,omitempty"` // list of the database's tables
 }
 
 // ToJSON() returns a JSON representation of DatabaseInfo.

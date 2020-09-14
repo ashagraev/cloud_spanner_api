@@ -9,15 +9,20 @@ import (
 
 // ColumnInfo stores basic information about a specific column in a Cloud Spanner table.
 type ColumnInfo struct {
+	// Name of a column
 	Name string
+	// Type of column elements
 	Type string
 }
 
 // TableInfo stores basic information about Cloud Spanner table.
 type TableInfo struct {
+	// Name of a table
 	Name string
 
-	Columns   []ColumnInfo
+	// List of table columns
+	Columns []ColumnInfo
+	// Number of table rows
 	RowsCount int64
 }
 
