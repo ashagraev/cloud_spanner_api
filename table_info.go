@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 
 	"cloud.google.com/go/spanner"
 )
@@ -27,7 +28,7 @@ func GetRowsCount(ctx context.Context, client *spanner.Client, table string) (in
 	var rowsCount int64
 	err := iter.Do(func(row *spanner.Row) error {
 		if err := row.Columns(&rowsCount); err != nil {
-			return err
+			return fmt.Errorf("spanner.Row.Columns() error for table %v: %v", table, err)
 		}
 		return nil
 	})

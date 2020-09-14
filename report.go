@@ -21,7 +21,7 @@ func ReportDatabases(ctx context.Context, databaseInfos []DatabaseInfo) error {
 
 	simpleJSON, err := json.Marshal(databaseInfos)
 	if err != nil {
-		return err
+		return fmt.Errorf("json.Marshal() databases error: %v", err)
 	}
 
 	if ctx.Value("json-pretty") == false {
@@ -31,7 +31,7 @@ func ReportDatabases(ctx context.Context, databaseInfos []DatabaseInfo) error {
 
 	var prettyJSON bytes.Buffer
 	if err := json.Indent(&prettyJSON, simpleJSON, "", "  "); err != nil {
-		return err
+		return fmt.Errorf("json.Indent() databases error: %v", err)
 	}
 	fmt.Println(prettyJSON.String())
 

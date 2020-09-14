@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 
 	"google.golang.org/api/cloudresourcemanager/v1"
 	"google.golang.org/api/iterator"
@@ -16,13 +17,13 @@ import (
 func ListProjects(ctx context.Context) ([]string, error) {
 	cloudresourcemanagerService, err := cloudresourcemanager.NewService(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("cloudresourcemanager.NewService error: %v", err)
 	}
 
 	request := cloudresourcemanagerService.Projects.List()
 	response, err := request.Do()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("cloudresourcemanagerService.Projects.List() error: %v", err)
 	}
 
 	var result []string
@@ -41,7 +42,6 @@ func ListInstances(ctx context.Context, instanceClient *instance.InstanceAdminCl
 		}
 
 		it := instanceClient.ListInstances(ctx, req)
-
 		for {
 			resp, err := it.Next()
 
@@ -49,7 +49,7 @@ func ListInstances(ctx context.Context, instanceClient *instance.InstanceAdminCl
 				break
 			}
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("instance.InstanceIterator.Next() error: %v", err)
 			}
 			instancesList = append(instancesList, resp.Name)
 			LogInstanceLoad(ctx, resp.Name)
@@ -62,11 +62,11 @@ func ListInstances(ctx context.Context, instanceClient *instance.InstanceAdminCl
 func ListDatabases(ctx context.Context) ([]string, error) {
 	instanceClient, err := instance.NewInstanceAdminClient(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("NewInstanceAdminClient error: %v", err)
 	}
 	databaseClient, err := database.NewDatabaseAdminClient(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("NewDatabaseAdminClient error: %v", err)
 	}
 
 	projects, err := ListProjects(ctx)

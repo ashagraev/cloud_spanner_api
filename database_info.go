@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"golang.org/x/sync/errgroup"
 
@@ -21,7 +22,7 @@ type DatabaseInfo struct {
 func (databaseInfo DatabaseInfo) ToJSON(pretty bool) (string, error) {
 	simpleJSON, err := json.Marshal(databaseInfo)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("json.Marshal(%v) error: %v", databaseInfo.Path, err)
 	}
 
 	if !pretty {
@@ -30,7 +31,7 @@ func (databaseInfo DatabaseInfo) ToJSON(pretty bool) (string, error) {
 
 	var prettyJSON bytes.Buffer
 	if err := json.Indent(&prettyJSON, simpleJSON, "", "  "); err != nil {
-		return "", err
+		return "", fmt.Errorf("json.Indent(%v) error: %v", databaseInfo.Path, err)
 	}
 	return prettyJSON.String(), nil
 }
@@ -45,13 +46,13 @@ func GetDatabaseInfo(ctx context.Context, databasePath string) (DatabaseInfo, er
 
 	databaseAdminClient, err := database.NewDatabaseAdminClient(ctx)
 	if err != nil {
-		return databaseInfo, err
+		return databaseInfo, fmt.Errorf("NewDatabaseAdminClient(%v) error: %v", databasePath, err)
 	}
 	defer databaseAdminClient.Close()
 
 	resp, err := databaseAdminClient.GetDatabase(ctx, getDatabaseRequest)
 	if err != nil {
-		return databaseInfo, err
+		return databaseInfo, fmt.Errorf("DatabaseAdminClient.GetDatabase(%v) error: %v", databasePath, err)
 	}
 	LogDatabaseStateLoad(ctx, databasePath)
 
