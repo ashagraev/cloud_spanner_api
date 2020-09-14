@@ -21,7 +21,7 @@ type TableInfo struct {
 	Name string
 
 	// List of table columns
-	Columns []ColumnInfo
+	Columns []*ColumnInfo
 	// Number of table rows
 	RowsCount int64
 }
@@ -113,7 +113,7 @@ func (tc *TableClient) GetTableInfos(ctx context.Context) ([]*TableInfo, error) 
 			logTableInfoLoad(ctx, tc.path+"/"+tableName)
 		}
 
-		tableInfos[index].Columns = append(tableInfos[index].Columns, ColumnInfo{Name: columnName, Type: spannerType})
+		tableInfos[index].Columns = append(tableInfos[index].Columns, &ColumnInfo{Name: columnName, Type: spannerType})
 
 		return nil
 	})
