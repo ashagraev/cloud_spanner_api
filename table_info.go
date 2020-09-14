@@ -90,16 +90,14 @@ func (tc *TableClient) GetTableInfos(ctx context.Context) ([]*TableInfo, error) 
 			index = len(tableInfos)
 			tables[tableName] = index
 
-			var tableInfo TableInfo
-			tableInfo.Name = tableName
 			rowsCount, err := tc.GetRowsCount(ctx, tableName)
 			if err != nil {
 				return err
 			}
 			LogTableRowsCountLoad(ctx, tc.path+"/"+tableName)
 
-			tableInfo.RowsCount = rowsCount
-			tableInfos = append(tableInfos, &tableInfo)
+			tableInfo := &TableInfo{Name: tableName, RowsCount: rowsCount}
+			tableInfos = append(tableInfos, tableInfo)
 			LogTableInfoLoad(ctx, tc.path+"/"+tableName)
 		}
 
