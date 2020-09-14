@@ -64,7 +64,7 @@ func GetTableInfos(ctx context.Context, databasePath string) ([]TableInfo, error
 	var tableInfos []TableInfo
 	tables := make(map[string]int)
 
-	error := iter.Do(func(row *spanner.Row) error {
+	err := iter.Do(func(row *spanner.Row) error {
 		var columnName, tableName, spannerType string
 		row.Columns(&columnName, &tableName, &spannerType)
 
@@ -91,5 +91,5 @@ func GetTableInfos(ctx context.Context, databasePath string) ([]TableInfo, error
 		return nil
 	})
 
-	return tableInfos, error
+	return tableInfos, err
 }
