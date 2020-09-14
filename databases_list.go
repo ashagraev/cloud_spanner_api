@@ -27,12 +27,12 @@ func ListProjects(ctx context.Context) ([]string, error) {
 	var result []string
 	for _, p := range response.Projects {
 		result = append(result, "projects/"+p.ProjectId)
-		LogProjectLoad(ctx, p.ProjectId)
+		logProjectLoad(ctx, p.ProjectId)
 	}
 	return result, nil
 }
 
-func (db *DatabaseClient) ListInstances(ctx context.Context, projects []string) ([]string, error) {
+func (db *DatabaseClient) listInstances(ctx context.Context, projects []string) ([]string, error) {
 	var instancesList []string
 	for _, project := range projects {
 		req := &instancepb.ListInstancesRequest{
@@ -50,19 +50,20 @@ func (db *DatabaseClient) ListInstances(ctx context.Context, projects []string) 
 				return nil, fmt.Errorf("instance.InstanceIterator.Next() error: %v", err)
 			}
 			instancesList = append(instancesList, resp.Name)
-			LogInstanceLoad(ctx, resp.Name)
+			logInstanceLoad(ctx, resp.Name)
 		}
 	}
 
 	return instancesList, nil
 }
 
+// ListDatabases() returns the list of user's Spanner databases.
 func (db *DatabaseClient) ListDatabases(ctx context.Context) ([]string, error) {
 	projects, err := ListProjects(ctx)
 	if err != nil {
 		return nil, err
 	}
-	instances, err := db.ListInstances(ctx, projects)
+	instances, err := db.listInstances(ctx, projects)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +84,7 @@ func (db *DatabaseClient) ListDatabases(ctx context.Context) ([]string, error) {
 				return nil, fmt.Errorf("database.DatabaseIterator.Next() error for instance %v: %v", instance, err)
 			}
 			listDatabases = append(listDatabases, resp.Name)
-			LogDataBaseLoad(ctx, resp.Name)
+			logDataBaseLoad(ctx, resp.Name)
 		}
 	}
 	return listDatabases, nil

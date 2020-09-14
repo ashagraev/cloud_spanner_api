@@ -11,6 +11,7 @@ import (
 	databasepb "google.golang.org/genproto/googleapis/spanner/admin/database/v1"
 )
 
+// DatabaseInfo stores basic information about a specific Cloud Spanner database.
 type DatabaseInfo struct {
 	Path  string
 	State string
@@ -18,6 +19,7 @@ type DatabaseInfo struct {
 	Tables []*TableInfo `json:"Tables,omitempty"`
 }
 
+// ToJSON() returns a JSON representation of DatabaseInfo.
 func (databaseInfo DatabaseInfo) ToJSON(pretty bool) (string, error) {
 	simpleJSON, err := json.Marshal(databaseInfo)
 	if err != nil {
@@ -35,6 +37,7 @@ func (databaseInfo DatabaseInfo) ToJSON(pretty bool) (string, error) {
 	return prettyJSON.String(), nil
 }
 
+// GetDatabaseInfo() collects basic information about a Spanner database.
 func (db *DatabaseClient) GetDatabaseInfo(ctx context.Context, databasePath string) (*DatabaseInfo, error) {
 	var databaseInfo DatabaseInfo
 	databaseInfo.Path = databasePath
@@ -47,7 +50,7 @@ func (db *DatabaseClient) GetDatabaseInfo(ctx context.Context, databasePath stri
 	if err != nil {
 		return &databaseInfo, fmt.Errorf("DatabaseAdminClient.GetDatabase(%v) error: %v", databasePath, err)
 	}
-	LogDatabaseStateLoad(ctx, databasePath)
+	logDatabaseStateLoad(ctx, databasePath)
 
 	databaseInfo.State = resp.GetState().String()
 
@@ -67,6 +70,7 @@ func (db *DatabaseClient) GetDatabaseInfo(ctx context.Context, databasePath stri
 	return &databaseInfo, nil
 }
 
+// GetDatabaseInfos() collects basic information about a list of Spanner databases.
 func (db *DatabaseClient) GetDatabaseInfos(ctx context.Context, databasePaths []string) ([]*DatabaseInfo, error) {
 	databaseInfos := make([]*DatabaseInfo, len(databasePaths))
 	errs, ctx := errgroup.WithContext(ctx)

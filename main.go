@@ -1,3 +1,5 @@
+// cloud_spanner_api is a demonstration program which uses Google Cloud API for listing
+// Spanner databases associated with user's account, including interesting metadata.
 package main
 
 import (
@@ -6,7 +8,7 @@ import (
 )
 
 func main() {
-	ctx := PrepareContext()
+	ctx := prepareContext()
 
 	db, err := NewDatabaseClient(ctx)
 	if err != nil {

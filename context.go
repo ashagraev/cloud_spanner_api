@@ -5,7 +5,7 @@ import (
 	"flag"
 )
 
-func PrepareContext() context.Context {
+func prepareContext() context.Context {
 	// some windows stuff
 	// os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "C:\\Users\\alex-\\OneDrive\\Desktop\\google-cloud-key.json")
 
