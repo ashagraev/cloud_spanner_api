@@ -16,7 +16,7 @@ type DatabaseInfo struct {
 	Path  string
 	State string
 
-	Tables []TableInfo `json:"Tables,omitempty"`
+	Tables []*TableInfo `json:"Tables,omitempty"`
 }
 
 func (databaseInfo DatabaseInfo) ToJSON(pretty bool) (string, error) {
@@ -36,7 +36,7 @@ func (databaseInfo DatabaseInfo) ToJSON(pretty bool) (string, error) {
 	return prettyJSON.String(), nil
 }
 
-func GetDatabaseInfo(ctx context.Context, databasePath string) (DatabaseInfo, error) {
+func GetDatabaseInfo(ctx context.Context, databasePath string) (*DatabaseInfo, error) {
 	var databaseInfo DatabaseInfo
 	databaseInfo.Path = databasePath
 
@@ -46,13 +46,13 @@ func GetDatabaseInfo(ctx context.Context, databasePath string) (DatabaseInfo, er
 
 	databaseAdminClient, err := database.NewDatabaseAdminClient(ctx)
 	if err != nil {
-		return databaseInfo, fmt.Errorf("NewDatabaseAdminClient(%v) error: %v", databasePath, err)
+		return &databaseInfo, fmt.Errorf("NewDatabaseAdminClient(%v) error: %v", databasePath, err)
 	}
 	defer databaseAdminClient.Close()
 
 	resp, err := databaseAdminClient.GetDatabase(ctx, getDatabaseRequest)
 	if err != nil {
-		return databaseInfo, fmt.Errorf("DatabaseAdminClient.GetDatabase(%v) error: %v", databasePath, err)
+		return &databaseInfo, fmt.Errorf("DatabaseAdminClient.GetDatabase(%v) error: %v", databasePath, err)
 	}
 	LogDatabaseStateLoad(ctx, databasePath)
 
@@ -61,16 +61,16 @@ func GetDatabaseInfo(ctx context.Context, databasePath string) (DatabaseInfo, er
 	if ctx.Value("no-tables") == false {
 		tables, err := GetTableInfos(ctx, databasePath)
 		if err != nil {
-			return databaseInfo, err
+			return &databaseInfo, err
 		}
 		databaseInfo.Tables = tables
 	}
 
-	return databaseInfo, nil
+	return &databaseInfo, nil
 }
 
-func GetDatabaseInfos(ctx context.Context, databasePaths []string) ([]DatabaseInfo, error) {
-	databaseInfos := make([]DatabaseInfo, len(databasePaths))
+func GetDatabaseInfos(ctx context.Context, databasePaths []string) ([]*DatabaseInfo, error) {
+	databaseInfos := make([]*DatabaseInfo, len(databasePaths))
 	errs, ctx := errgroup.WithContext(ctx)
 	for databaseIdx := range databasePaths {
 		databaseIdx := databaseIdx // https://golang.org/doc/faq#closures_and_goroutines

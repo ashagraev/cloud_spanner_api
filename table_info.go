@@ -38,7 +38,7 @@ func GetRowsCount(ctx context.Context, client *spanner.Client, table string) (in
 	return rowsCount, nil
 }
 
-func GetTableInfos(ctx context.Context, databasePath string) ([]TableInfo, error) {
+func GetTableInfos(ctx context.Context, databasePath string) ([]*TableInfo, error) {
 	client, _ := spanner.NewClientWithConfig(ctx, databasePath, spanner.ClientConfig{
 		SessionPoolConfig: spanner.SessionPoolConfig{
 			MinOpened: 1,
@@ -61,7 +61,7 @@ func GetTableInfos(ctx context.Context, databasePath string) ([]TableInfo, error
 	iter := client.Single().Query(ctx, stmt)
 	defer iter.Stop()
 
-	var tableInfos []TableInfo
+	var tableInfos []*TableInfo
 	tables := make(map[string]int)
 
 	err := iter.Do(func(row *spanner.Row) error {
@@ -82,7 +82,7 @@ func GetTableInfos(ctx context.Context, databasePath string) ([]TableInfo, error
 			LogTableRowsCountLoad(ctx, databasePath+"/"+tableName)
 
 			tableInfo.RowsCount = rowsCount
-			tableInfos = append(tableInfos, tableInfo)
+			tableInfos = append(tableInfos, &tableInfo)
 			LogTableInfoLoad(ctx, databasePath+"/"+tableName)
 		}
 
