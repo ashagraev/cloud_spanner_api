@@ -80,7 +80,7 @@ func (db *DatabaseClient) ListDatabases(ctx context.Context) ([]string, error) {
 				break
 			}
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("database.DatabaseIterator.Next() error for instance %v: %v", instance, err)
 			}
 			listDatabases = append(listDatabases, resp.Name)
 			LogDataBaseLoad(ctx, resp.Name)
