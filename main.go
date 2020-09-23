@@ -29,7 +29,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	err = ReportDatabases(ctx, databaseInfos)
+	err = reportDatabases(ctx, databaseInfos)
 	if err != nil {
 		fmt.Fprint(os.Stderr, err)
 		os.Exit(1)

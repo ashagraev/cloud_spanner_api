@@ -20,7 +20,7 @@ type DatabaseInfo struct {
 	State string
 
 	// Tables list of a Spanner database.
-	Tables []*TableInfo `json:"Tables,omitempty"` // list of the database's tables
+	Tables []*TableInfo `json:"Tables,omitempty"`
 }
 
 // ToJSON() returns a JSON representation of DatabaseInfo.

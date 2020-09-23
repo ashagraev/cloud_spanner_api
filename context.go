@@ -6,9 +6,6 @@ import (
 )
 
 func prepareContext() context.Context {
-	// some windows stuff
-	// os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "C:\\Users\\alex-\\OneDrive\\Desktop\\google-cloud-key.json")
-
 	verbose := false
 	flag.BoolVar(&verbose, "verbose", verbose, "turn on loading process logging")
 

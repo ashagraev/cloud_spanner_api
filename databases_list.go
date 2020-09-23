@@ -12,7 +12,7 @@ import (
 	instancepb "google.golang.org/genproto/googleapis/spanner/admin/instance/v1"
 )
 
-func ListProjects(ctx context.Context) ([]string, error) {
+func listProjects(ctx context.Context) ([]string, error) {
 	cloudresourcemanagerService, err := cloudresourcemanager.NewService(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("cloudresourcemanager.NewService error: %v", err)
@@ -59,7 +59,7 @@ func (db *DatabaseClient) listInstances(ctx context.Context, projects []string) 
 
 // ListDatabases() returns the list of user's Spanner databases.
 func (db *DatabaseClient) ListDatabases(ctx context.Context) ([]string, error) {
-	projects, err := ListProjects(ctx)
+	projects, err := listProjects(ctx)
 	if err != nil {
 		return nil, err
 	}

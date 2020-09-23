@@ -7,7 +7,7 @@ import (
 	"fmt"
 )
 
-func ReportDatabases(ctx context.Context, databaseInfos []*DatabaseInfo) error {
+func reportDatabases(ctx context.Context, databaseInfos []*DatabaseInfo) error {
 	if ctx.Value("json-lines") == true {
 		for _, databaseInfo := range databaseInfos {
 			databaseJSON, err := databaseInfo.ToJSON(false)
